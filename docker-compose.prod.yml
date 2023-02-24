@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - static_files:/app/static-dump
+      - medias:/app/medias
+      - database:/app/database
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=0
+      - DB_NAME=db.sqlite3
+      - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+      - ALLOWED_HOSTS=${HOSTNAME}
+
+  proxy:
+    image: caddy:2.6-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - static_files:/app/static:ro
+      - medias:/app/medias:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - HOSTNAME=${HOSTNAME}
+    depends_on:
+      - app
+
+volumes:
+  static_files:
+  medias:
+  database:
+  caddy_data:
+  caddy_config:
+

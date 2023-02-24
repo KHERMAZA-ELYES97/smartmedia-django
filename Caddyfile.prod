@@ -1,0 +1,15 @@
+{$HOSTNAME} {
+	route /static/* {
+	   	uri strip_prefix /static
+		file_server {
+			root /app/static
+		}
+	}
+	route /media/* {
+	   	uri strip_prefix /media
+		file_server {
+			root /app/medias
+		}
+	}
+	reverse_proxy app:8000
+}

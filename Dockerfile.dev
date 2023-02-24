@@ -1,0 +1,29 @@
+FROM python:3.9.0-alpine
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED 1
+
+RUN apk add curl
+
+COPY ./requirements.txt /requirements.txt
+
+RUN apk add --no-cache build-base linux-headers && \
+	pip install --upgrade pip && \
+    apk add --update --no-cache sqlite-dev && \
+    apk add --update --no-cache --virtual .tmp-deps build-base musl-dev && \
+	pip install -r /requirements.txt && \
+    apk del build-base linux-headers
+
+RUN adduser app -D
+USER app
+
+# Not in dev mode. ¯\_(ツ)_/¯
+# COPY ./app /app
+
+EXPOSE 8000
+
+CMD sh -c "python manage.py makemigrations; \
+	python manage.py migrate; \
+    rm -r /app/static-dump/*; python manage.py collectstatic; \
+    python manage.py createsuperuser --noinput --username smartmedia --email "ekhermaza@citc-eurarfid.com"; \
+    python manage.py runserver 0.0.0.0:8000"
